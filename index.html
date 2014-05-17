@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--
+			Title	:	Number Shuffle Game
+			Author	:	Kamal Relwani
+			Date	:	27-Feb-2014 10:29 AM - 11:32 AM
+			
+			TODO Later
+				->	Try with divs
+				->	Add animation using .animate({ position: absolute, top, left })
+				->	Capture number of movies (inside if condition)
+				->	
+		-->
+		<title>Number Shuffle Game</title>
+		<style type="text/css">
+			body { font-family: Verdana; font-size: 12px; }
+			table.game-grid { border: 1px solid black; }
+			table.game-grid td { border: 1px solid black; width: 50px; height: 50px; vertical-align: middle; text-align: center; cursor: pointer; font-weight: bold; }
+		</style>
+		<script type="text/javascript">
+			var gridSize = 3;
+			
+			function initGame() {
+				gridSize = document.getElementById("selLevel").value;
+				
+				var numbers = [];
+				for (var a = 0; a < (gridSize * gridSize) - 1; a++) { numbers.push((a + 1) + ""); }
+				
+				numbers.sort(function () { return Math.round(Math.random()); }).push("&nbsp;");
+				
+				var html = "<table id=\"game-grid\" class=\"game-grid\"><tr>";
+				for (var a = 0; a < numbers.length; a++) {
+					if (a != 0 && a % gridSize == 0) {
+						html += "</tr><tr>";
+					}
+					
+					if (numbers[a] == "&nbsp;") {
+						html += "<td id=\"tile-blank\">" + numbers[a] + "</td>";
+					} else {
+						html += "<td id=\"tile-" + numbers[a] + "\" onclick=\"moveTile('" + numbers[a] + "');\">" + numbers[a] + "</td>";
+					}
+				}
+				html += "</tr></table>";
+				document.getElementById("game-area").innerHTML = html;
+			}
+			
+			function moveTile(tileNumber) {
+				var numberGrid = [], blankTile = {}, domNumbers = [], allowedNumbers = [];
+				
+				var rows = document.getElementById("game-grid").getElementsByTagName("tr");
+				for (var a = 0; a < rows.length; a++) {
+					var columns = rows[a].getElementsByTagName("td");
+					for (var b = 0; b < columns.length; b++) {
+						if (numberGrid[a] == undefined) {
+							numberGrid[a] = [];
+						}
+						if (columns[b].innerHTML == "&nbsp;") {
+							blankTile = { rowId: a, colId: b };
+						}
+						numberGrid[a][b] = columns[b].innerHTML;
+						domNumbers.push(columns[b].innerHTML);
+					}
+				}
+				
+				if (numberGrid[blankTile.rowId - 1] != undefined && numberGrid[blankTile.rowId - 1][blankTile.colId] != undefined) {	// top
+					allowedNumbers.push(numberGrid[blankTile.rowId - 1][blankTile.colId]);
+				}
+				
+				if (numberGrid[blankTile.rowId + 1] != undefined && numberGrid[blankTile.rowId + 1][blankTile.colId] != undefined) {	// bottom
+					allowedNumbers.push(numberGrid[blankTile.rowId + 1][blankTile.colId]);
+				}
+				
+				if (numberGrid[blankTile.rowId] != undefined && numberGrid[blankTile.rowId][blankTile.colId - 1] != undefined) {	// left
+					allowedNumbers.push(numberGrid[blankTile.rowId][blankTile.colId - 1]);
+				}
+				
+				if (numberGrid[blankTile.rowId] != undefined && numberGrid[blankTile.rowId][blankTile.colId + 1] != undefined) {	// right
+					allowedNumbers.push(numberGrid[blankTile.rowId][blankTile.colId + 1]);
+				}
+				
+				if (allowedNumbers.indexOf(tileNumber) != -1) {
+					
+					var blankTile = document.getElementById("tile-blank");
+					var selectedTile = document.getElementById("tile-" + tileNumber);
+					
+					blankTile.innerHTML = tileNumber;
+					blankTile.setAttribute("onclick", "moveTile('" + tileNumber + "');");
+					blankTile.id = "tile-" + tileNumber;
+					
+					selectedTile.innerHTML = "&nbsp;";
+					selectedTile.removeAttribute("onclick");
+					selectedTile.id = "tile-blank";
+					
+					checkCompletion();
+				}
+			}
+			
+			function checkCompletion() {
+				var domNumbers = [];
+				
+				var rows = document.getElementById("game-grid").getElementsByTagName("tr");
+				for (var a = 0; a < rows.length; a++) {
+					var columns = rows[a].getElementsByTagName("td");
+					for (var b = 0; b < columns.length; b++) {
+						if (columns[b].innerHTML == "&nbsp;") {
+							domNumbers.push(0);
+						} else {
+							domNumbers.push(parseInt(columns[b].innerHTML, 10));
+						}
+					}
+				}
+				
+				domNumbers.pop();
+				var sortedNumbers = domNumbers.slice(0).sort();
+				
+				if (domNumbers.toString() == sortedNumbers.toString()) {
+					alert("Congratulations! You've completed this level.");
+					return;
+				}
+			}
+		</script>
+	</head>
+	<body onload="initGame();">
+		<h1>Number Shuffle Game</h1>
+		Difficulty Level: 
+		<select id="selLevel" onchange="gridSize = this.value; initGame();">
+			<option value="3">Easy (3x3)</option>
+			<option value="4">Medium (4x4)</option>
+			<option value="5">Hard (5x5)</option>
+		</select>
+		<button onclick="initGame();">Restart Game</button>
+		<br/><br/>
+		<div id="game-area"></div>
+		<br/>
+		<i>* Made by <strong>Kamal Relwani</strong>. There are many ways to make this, I chose this way.</i>
+	</body>
+</html>
